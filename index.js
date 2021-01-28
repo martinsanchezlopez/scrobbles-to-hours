@@ -7,6 +7,7 @@ let error = false;
 
 function s2h(){
         $('#error').empty();
+        error =false;
         let userName = document.getElementById("userNameInput").value;
         userName.replace(" ", "+");
         let artist = document.getElementById("artistInput").value;
@@ -20,7 +21,7 @@ function s2h(){
             if(getSelectedValue("queryOption") == "track"){
                 getTrackLT(userName, artist, name);
             }
-            if(getSelectedValue("queryOption") == "album"){
+            else if(getSelectedValue("queryOption") == "album"){
                 getAlbumLT(userName, artist, name);
             }
             else{
@@ -54,10 +55,11 @@ function getAlbumLT(user, artist, album){
                 for(i=0; i<jsonTracks.length; i++){
                     tracks.push(jsonTracks[jsonTracks.length - 1 - i].name);
                 }
-            });
-            for(i=0; i<jsonTracks.length; i++){
+                for(i=0; i<jsonTracks.length; i++){
                 getTrackLT(user, artist, tracks[i]);
             }
+            });
+            
         });
         $(document).ajaxStop(function () {
             if(!error){
@@ -81,7 +83,6 @@ function getTrackLT(user, artist, track){
             });
             $('#result').append(html);
         });
-    
 }
 
 
