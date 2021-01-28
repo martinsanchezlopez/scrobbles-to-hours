@@ -12,29 +12,25 @@
 <body>
 
 <h1> Scrobble to hours </h1>
-<div class="grid-container">
-    <div class="grid-item"> Last.fm username </div>
-    <div>
+    <input class="grid-item" type="text" placeholder="Last.fm username... " id="userNameInput">
+    
+    <h2>Get all time listening time of an album/track </h2>
+    <div class="grid-container">
     <select class="grid-item" id="queryOption">
             <option value=null selected>-- Select --</option>
-            <option value="artist">Artist</option>
             <option value="album">Album</option>
             <option value="track">Track</option>
         </select>
-        </div>
-        <div>
-    <select class="grid-item" id="time">
-            <option value=null selected>-- Select --</option>
-            <option value="artist">dsafn</option>
-            <option value="album">dafadf</option>
-            <option value="track">adf</option>
-        </select>  
-        </div>
+        <input class="grid-item" type="text" placeholder="Artist... " id="artistInput">
+    <input class="grid-item" type="text" placeholder="Track/Album..." id="taInput">
+        <button class="grid-item" type="button" onclick="s2h()"><b>Go</b></button>
 </div>  
+
+<h2>OR</h2>
+<h2>Get top albums/tracks listening time in the chose time frame</h2>
 <div class="grid-container">
-    <input class="grid-item" type="text" placeholder="Last.fm username... " id="userNameInput">
     <input class="grid-item" type="text" placeholder="Artist... " id="artistInput">
-    <input class="grid-item" type="text" placeholder="Track... " id="trackInput">
+    <input class="grid-item" type="text" placeholder="Track/Album..." id="taInput">
         <button class="grid-item" type="button" onclick="s2h()"><b>Go</b></button>
 </div>
 </body>
