@@ -6,6 +6,7 @@ let error = false;
 
 
 function s2h(){
+        $('#error').empty();
         let userName = document.getElementById("userNameInput").value;
         userName.replace(" ", "+");
         let artist = document.getElementById("artistInput").value;
@@ -23,16 +24,17 @@ function s2h(){
                 getAlbumLT(userName, artist, name);
             }
             else{
-                alert("Please choose a search type");   
+                var json = '{"message":"Please select a mode"}';
+                throwError(JSON.parse(json));
             }
         }
         else{
-         alert("Please fill all thingies");   
+            var json = '{"message" : "Please fill all fields"}';
+            throwError(JSON.parse(json));
         }
 }
 
 function throwError(json){
-    
         $('#error').append("<h1> ERROR : " + json.message + " </h1>");
         error = true;
 }
