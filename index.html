@@ -6,21 +6,41 @@
 <title>Scrobble2Hours</title>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
+<link rel="stylesheet" type="text/css" href="menu.css">
 </head>
 
 <body>
 
 <h1> Scrobble to hours </h1>
-
-<input type="text" placeholder="Last.fm username... " id="userNameInput">
-<input type="text" placeholder="Artist... " id="artistInput">
-<input type="text" placeholder="Artist... " id="trackInput">
-    <button type="button" onclick="s2h()">Go</button>
-
+<div class="grid-container">
+    <div class="grid-item"> Last.fm username </div>
+    <div>
+    <select class="grid-item" id="queryOption">
+            <option value=null selected>-- Select --</option>
+            <option value="artist">Artist</option>
+            <option value="album">Album</option>
+            <option value="track">Track</option>
+        </select>
+        </div>
+        <div>
+    <select class="grid-item" id="time">
+            <option value=null selected>-- Select --</option>
+            <option value="artist">dsafn</option>
+            <option value="album">dafadf</option>
+            <option value="track">adf</option>
+        </select>  
+        </div>
+</div>  
+<div class="grid-container">
+    <input class="grid-item" type="text" placeholder="Last.fm username... " id="userNameInput">
+    <input class="grid-item" type="text" placeholder="Artist... " id="artistInput">
+    <input class="grid-item" type="text" placeholder="Track... " id="trackInput">
+        <button class="grid-item" type="button" onclick="s2h()"><b>Go</b></button>
+</div>
 </body>
 
 <script src="index.js"> </script>
+<script src="menus.js"></script>
 
 <h2 id="result"> <h2>
 </html>
