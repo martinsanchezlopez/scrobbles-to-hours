@@ -4,6 +4,7 @@ console.log();
 let totalTime = 0;
 let error = false;
 let userName = null;
+let queryBlock = false;
 
 let albumJson = null;
 
@@ -12,11 +13,14 @@ let albumJson = null;
 function s2h(){
         $('#error').empty();
         error =false;
-        userName = document.getElementById("userNameInput").value;
+        
+        queryBlock = false;
+        
+        userName = encodeURIComponent(document.getElementById("userNameInput").value);
         userName.replace(" ", "+");
-        let artist = document.getElementById("artistInput").value;
+        let artist = encodeURIComponent(document.getElementById("artistInput").value);
         artist.replace(" ", "+");
-        let name = document.getElementById("taInput").value;
+        let name = encodeURIComponent(document.getElementById("taInput").value);
         name.replace(" ", "+");
             
         if (userName != "" && artist != "" && userName != "" ){
@@ -26,7 +30,7 @@ function s2h(){
                 getTrackLT(userName, artist, name);
             }
             else if(getSelectedValue("queryOption") == "album"){
-                getAlbumLT(userName, artist, name);
+                getAlbum(userName, artist, name);
             }
             else{
                 var json = '{"message":"Please select a mode"}';
@@ -43,10 +47,13 @@ function throwError(json){
         $('#error').append("<h1> ERROR : " + json.message + " </h1>");
         error = true;
 }
+
+function blockQueries(){
+    queryBlock = true;
+}
         
         
-function getAlbumLT(user, artist, album){
-    totalTime=0;
+function getAlbum(user, artist, album){
     let albumDuration = 0;
     var totalTimeHtml = '';
     $.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
@@ -77,8 +84,8 @@ function getAlbumLT(user, artist, album){
                 let hourPlayTime = minutePlayTime/60;
                 
                 totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
-                totalTimeHtml += '<br> <a id="aDepth" onclick="albumInDepth(albumJson);" href="depth.html">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
-                $('#result').append(totalTimeHtml);
+                totalTimeHtml += '<br> <a id="aDepth" onclick="getAlbumInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
+                $('#depth').append(totalTimeHtml);
             }
         });
         
@@ -87,24 +94,29 @@ function getAlbumLT(user, artist, album){
 }
        
        
-function albumInDepth(json){
-    let tracks = [];
-    console.log(json + " " + json.album + " " + json.album.tracks);
-    let jsonTracks = json.album.tracks.track;
-    for(i=0; i<jsonTracks.length; i++){
-        tracks.push(jsonTracks[jsonTracks.length - 1 - i].name);
-    }
-    for(i=0; i<jsonTracks.length; i++){
-    getTrackLT(userName, json.album.artist, tracks[i]);
-    }
+function getAlbumInDepth(json){
+    if(!queryBlock){
+        $('#depth').empty();
+        $('#result').empty();
+        totalTime = 0;
+        let tracks = [];
+        let jsonTracks = json.album.tracks.track;
+        for(i=0; i<jsonTracks.length; i++){
+            tracks.push(encodeURIComponent (jsonTracks[jsonTracks.length - 1 - i].name) );
+        }
+        for(i=0; i<jsonTracks.length; i++){
+        getTrackLT(userName, json.album.artist, tracks[i]);
+        }
 
-    $(document).ajaxStop(function () {
-    if(!error){
-    let depthTimeHtml = '';
-    depthTimeHtml = "<h3> You listened to " + json.name + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
-    $('#depth').append(depthTimeHtml);
+        $(document).ajaxStop(function () {
+            if(!error){
+                let depthTimeHtml = '';
+                depthTimeHtml = "<h3> You listened to " + json.album.name + " a total of " + parseInt( totalTime) + " minutes or " + parseInt(totalTime/60) + " hours! </h3>";
+                $('#depth').append(depthTimeHtml);
+                queryBlock = true;
+            }
+        });
     }
-    });
 }
         
 function getTrackLT(user, artist, track){
