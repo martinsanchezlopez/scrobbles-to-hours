@@ -16,8 +16,8 @@
 <h1> Scrobble to hours </h1>
     <input class="grid-item" type="text" placeholder="Last.fm username... " id="userNameInput">
     
-    <h2>Get all time listening time of an album/track </h2>
     <div class="grid-container">
+    <h2>Get all time listening time of an album/track </h2>
     <select class="grid-item" id="queryOption">
             <option value=null selected>-- Select --</option>
             <option value="album">Album</option>
@@ -25,11 +25,38 @@
         </select>
         <input class="grid-item" type="text" placeholder="Artist... " id="artistInput">
     <input class="grid-item" type="text" placeholder="Track/Album..." id="taInput">
-        <button class="grid-item" type="button" onclick="s2h()"><b>Go</b></button>
+        <button class="grid-item" type="button" onclick="customReport()"><b>Go</b></button>
 </div>  
 
 <h2>OR</h2>
+
+<div class="grid-container">
 <h2>Get top albums/tracks listening time in the chose time frame</h2>
+    <select class="grid-item" id="topQueryOption">
+        <option value=null selected>-- Mode --</option>
+        <option value="albums">Albums</option>
+        <option value="tracks">Tracks</option>
+    </select>
+    <select class="grid-item" id="topQueryPeriod">
+        <option value=null selected>-- Period --</option>
+        <option value="overall">All Time</option>
+        <option value="12month">Last 12 Months</option>
+        <option value="6month">Last 6 Months</option>
+        <option value="3month">Last 3 Months</option>
+        <option value="1month">Last Month</option>
+        <option value="7day">Last Week</option>
+    </select>
+    <select class="grid-item" id="topQueryEntries">
+        <option value=null selected>-- Number of entries --</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+    </select>
+        <button class="grid-item" type="button" onclick="topReport()"><b>Go</b></button>
+</div>  
+
 </div>
 </body>
 

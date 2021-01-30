@@ -10,38 +10,79 @@ let albumJson = null;
 
 //ljsdkajldsalsdaj TODO parseint pr heures, rajouter heures for track, check bug avec shrines of paralysis, implement album tout //court 
 
-function s2h(){
-        $('#error').empty();
-        error =false;
+function customReport(){
+    $('#error').empty();
+    error =false;
+    queryBlock = false;
+
+    userName = encodeURIComponent(document.getElementById("userNameInput").value);
+    userName.replace(" ", "+");
+    let artist = encodeURIComponent(document.getElementById("artistInput").value);
+    artist.replace(" ", "+");
+    let name = encodeURIComponent(document.getElementById("taInput").value);
+    name.replace(" ", "+");
         
-        queryBlock = false;
-        
-        userName = encodeURIComponent(document.getElementById("userNameInput").value);
-        userName.replace(" ", "+");
-        let artist = encodeURIComponent(document.getElementById("artistInput").value);
-        artist.replace(" ", "+");
-        let name = encodeURIComponent(document.getElementById("taInput").value);
-        name.replace(" ", "+");
-            
-        if (userName != "" && artist != "" && userName != "" ){
-            $("#result").empty(); 
-            $('#result').append("<hr>");
-            if(getSelectedValue("queryOption") == "track"){
-                getTrackLT(userName, artist, name);
-            }
-            else if(getSelectedValue("queryOption") == "album"){
-                getAlbum(userName, artist, name);
-            }
-            else{
-                var json = '{"message":"Please select a mode"}';
-                throwError(JSON.parse(json));
-            }
+    if (userName != "" && artist != "" && userName != "" ){
+        $("#result").empty(); 
+        $('#result').append("<hr>");
+        if(getSelectedValue("queryOption") == "track"){
+            getTrackLT(userName, artist, name);
+        }
+        else if(getSelectedValue("queryOption") == "album"){
+            getAlbumLT(userName, artist, name, true);
         }
         else{
-            var json = '{"message" : "Please fill all fields"}';
+            var json = '{"message":"Please select a mode"}';
             throwError(JSON.parse(json));
         }
+    }
+    else{
+        var json = '{"message" : "Please fill all fields"}';
+        throwError(JSON.parse(json));
+    }
 }
+
+function topReport(){
+    $('#error').empty();
+    error =false;
+    queryBlock = false;
+    
+    userName = encodeURIComponent(document.getElementById("userNameInput").value);
+    userName.replace(" ", "+");
+    
+    let queryMode = getSelectedValue("topQueryOption");
+    
+    $.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryOptionEntries") + "&period="+ getSelectedValue("topQueryPeriod"), 
+              function(json){
+                
+                  
+                  
+                  
+            });
+        
+        
+        
+        
+}
+
+
+function topToHour(json, topMethodOption){
+    $.each(json.top + "topMethodOption", funtion(i, item){
+        if(topMethodOption == trakcs){
+            getTrackLT(userName, item.artist.name, name);
+        }
+        else{
+            getAlbumLT(userName, time.artist.name, name);
+        }
+        
+        
+    });
+    $(document).ajaxStop(function () {
+        $('result').append("<a> save to csv <a/>);  
+    });
+}
+
+
 
 function throwError(json){
         $('#error').append("<h1> ERROR : " + json.message + " </h1>");
@@ -53,7 +94,7 @@ function blockQueries(){
 }
         
         
-function getAlbum(user, artist, album){
+function getAlbumLT(user, artist, album, allowInDepthOption){
     let albumDuration = 0;
     var totalTimeHtml = '';
     $.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
@@ -61,16 +102,6 @@ function getAlbum(user, artist, album){
             throwError(json);
             return;
         }
-        /*
-            $.each(json, function(i, item) {
-                let jsonTracks = item.tracks.track;
-                for(i=0; i<jsonTracks.length; i++){
-                    tracks.push(jsonTracks[jsonTracks.length - 1 - i].name);
-                }
-                for(i=0; i<jsonTracks.length; i++){
-                getTrackLT(user, artist, tracks[i]);
-            }
-            });*/
         
         let jsonTracks = json.album.tracks.track;
         for(i=0; i<jsonTracks.length; i++){
@@ -84,8 +115,15 @@ function getAlbum(user, artist, album){
                 let hourPlayTime = minutePlayTime/60;
                 
                 totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
-                totalTimeHtml += '<br> <a id="aDepth" onclick="getAlbumInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
-                $('#depth').append(totalTimeHtml);
+                $('#result').append(totalTimeHtml);
+
+                
+                if(allowInDepthOption){
+                var depthOption = '';
+                depthOption += '<br> <a id="aDepth" onclick="getAlbumLTInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
+                $('#depth').append(depthOption);
+                }
+                    
             }
         });
         
@@ -94,7 +132,7 @@ function getAlbum(user, artist, album){
 }
        
        
-function getAlbumInDepth(json){
+function getAlbumLTInDepth(json){
     if(!queryBlock){
         $('#depth').empty();
         $('#result').empty();
