@@ -1,6 +1,4 @@
 //let userName = "";
-
-console.log();
 let totalTime = 0;
 let error = false;
 let userName = null;
@@ -52,33 +50,29 @@ function topReport(){
     
     let queryMode = getSelectedValue("topQueryOption");
     
-    $.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryOptionEntries") + "&period="+ getSelectedValue("topQueryPeriod"), 
-              function(json){
-                
-                  
-                  
-                  
-            });
+    $.getJSON("http://ws.audioscrobbler.com/2.0/?method=user.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryEntries") + "&period="+ getSelectedValue("topQueryPeriod") + "&format=json", function(json){
         
-        
-        
+                $(document).ajaxStop(function () {
+                topToHour(json, queryMode);
+                });
+        });
         
 }
 
 
 function topToHour(json, topMethodOption){
-    $.each(json.top + "topMethodOption", funtion(i, item){
-        if(topMethodOption == trakcs){
-            getTrackLT(userName, item.artist.name, name);
+        if(topMethodOption == "tracks"){
+            $.each(json.toptracks.track, function(i, item){
+                getPlayTime(item, true);
+            });
         }
         else{
-            getAlbumLT(userName, time.artist.name, name);
+            getAlbumLT(userName, time.artist.name, name, false);
         }
         
         
-    });
     $(document).ajaxStop(function () {
-        $('result').append("<a> save to csv <a/>);  
+        $('result').append("<a> save to csv <a/>");  
     });
 }
 
@@ -163,27 +157,40 @@ function getTrackLT(user, artist, track){
             throwError(json);
             return;
             }
-            var html = '';
-            $.each(json, function(i, item) {
-                timeListened = getPlayTime(item);
-                html += constructResult(item, timeListened);
-            });
-            $('#result').append(html);
+            getPlayTime(json, jsonFromTop);
+            
         });
 }
 
 
-function getPlayTime(trackJson){
-            let name = trackJson.name;
-            let duration = trackJson.duration; 
-            let playcount = trackJson.userplaycount;
-            totalTime+= ( parseInt( (duration*playcount)/60000, 10) );
-            return ( parseInt( (duration*playcount)/60000, 10) );
+/*
+ * Calculates and displays the play time of a track
+ * trackJson : json of the track to calculate
+ * jsonFromTop : true if the json is the json from user.getTopTracks, false if from track.getInfo
+ */
+function getPlayTime(trackJson, jsonFromTop){
+    var html = '';
+    let name = trackJson.name;
+    let duration = trackJson.duration; 
+    let playcount = 0;
+    let time = 0;
+    if(jsonFromTop){ //because the json from the track.getInfo and user.gettoptracks is not the same ...
+        playcount  = parseInt(trackJson.playcount);
+        time = (duration*playcount)/60;
+    }
+    else{
+        playcount = trackJson.userplaycount;
+        time = (duration*playcount)/60000;
+    }
+    console.log(duration + " " + playcount);
+    totalTime+= time;
+    html += constructResult(trackJson.artist.name, name, playcount, time );
+    $('#result').append(html);
     
 }
 
-function constructResult(json, time){
-            return ("<p>" + json.artist.name + " - " + json.name + " - " + "Scrobbles : " + json.userplaycount + " Time listened : " + time + " minutes </p>");
+function constructResult(artist, name, playcount, time){
+            return ("<p>" + artist+ " - " + name + " - " + "Scrobbles : " + playcount + " Time listened : " + time + " minutes or " + parseInt(time/60) + " hours! </p>");
 }
 
 //function getInputValue() {
