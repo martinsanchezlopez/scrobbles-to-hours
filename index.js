@@ -56,7 +56,7 @@ function blockQueries(){
 function getAlbum(user, artist, album){
     let albumDuration = 0;
     var totalTimeHtml = '';
-    $.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
+    $.getJSON("https://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
         if(json.error != undefined){
             throwError(json);
             return;
@@ -120,7 +120,7 @@ function getAlbumInDepth(json){
 }
         
 function getTrackLT(user, artist, track){
-        $.getJSON("http://ws.audioscrobbler.com/2.0/?method=track.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&track=" + track + "&format=json&autocorrect=1", function(json) {
+        $.getJSON("https://ws.audioscrobbler.com/2.0/?method=track.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&track=" + track + "&format=json&autocorrect=1", function(json) {
             if(json.error != undefined){
             throwError(json);
             return;
