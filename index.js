@@ -27,7 +27,7 @@ function customReport(){
             getTrackLT(userName, artist, name);
         }
         else if(getSelectedValue("queryOption") == "album"){
-            getAlbumLT(userName, artist, name, true);
+            getAlbumLT(userName, artist, name, -1);
         }
         else{
             var json = '{"message":"Please select a mode"}';
@@ -42,6 +42,7 @@ function customReport(){
 
 function topReport(){
     $('#error').empty();
+    $('#result').empty();
     error =false;
     queryBlock = false;
     
@@ -50,11 +51,9 @@ function topReport(){
     
     let queryMode = getSelectedValue("topQueryOption");
     
-    $.getJSON("http://ws.audioscrobbler.com/2.0/?method=user.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryEntries") + "&period="+ getSelectedValue("topQueryPeriod") + "&format=json", function(json){
+    $.getJSON("https://ws.audioscrobbler.com/2.0/?method=user.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryEntries") + "&period="+ getSelectedValue("topQueryPeriod") + "&format=json", function(json){
         
-                $(document).ajaxStop(function () {
-                topToHour(json, queryMode);
-                });
+            topToHour(json, queryMode);
         });
         
 }
@@ -67,7 +66,9 @@ function topToHour(json, topMethodOption){
             });
         }
         else{
-            getAlbumLT(userName, time.artist.name, name, false);
+            $.each(json.topalbums.album, function(i, item){
+                getAlbumLT(userName, item.artist.name, item.name, item.playcount);
+            });
         }
         
         
@@ -83,15 +84,12 @@ function throwError(json){
         error = true;
 }
 
-function blockQueries(){
-    queryBlock = true;
-}
         
         
-function getAlbumLT(user, artist, album, allowInDepthOption){
+function getAlbumLT(user, artist, album, userGetTopPlaycount){ //playcount -1 if the funciton is not called for the user.gettopalbums
     let albumDuration = 0;
     var totalTimeHtml = '';
-    $.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
+    $.getJSON("https://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
         if(json.error != undefined){
             throwError(json);
             return;
@@ -105,17 +103,25 @@ function getAlbumLT(user, artist, album, allowInDepthOption){
         
         $(document).ajaxStop(function () {
             if(!error){
-                let minutePlayTime = (albumDuration*parseInt(json.album.userplaycount) )/(jsonTracks.length*60);
+                let userPlayCount;
+                if (userGetTopPlaycount == -1){
+                    userPlayCount = json.album.userplaycount;
+                }
+                else{
+                    userPlayCount = userGetTopPlaycount;
+                }
+                
+                let minutePlayTime = (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60);
                 let hourPlayTime = minutePlayTime/60;
                 
                 totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
                 $('#result').append(totalTimeHtml);
 
                 
-                if(allowInDepthOption){
-                var depthOption = '';
-                depthOption += '<br> <a id="aDepth" onclick="getAlbumLTInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
-                $('#depth').append(depthOption);
+                if(userGetTopPlaycount == -1){
+                    var depthOption = '';
+                    depthOption += '<br> <a id="aDepth" onclick="getAlbumLTInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
+                    $('#depth').append(depthOption);
                 }
                     
             }
@@ -143,7 +149,7 @@ function getAlbumLTInDepth(json){
         $(document).ajaxStop(function () {
             if(!error){
                 let depthTimeHtml = '';
-                depthTimeHtml = "<h3> You listened to " + json.album.name + " a total of " + parseInt( totalTime) + " minutes or " + parseInt(totalTime/60) + " hours! </h3>";
+                depthTimeHtml = "<h3> You listened to " + json.album.name + " a total of " + parseInt( totalTime) + " minutes or " + totalTime/60 + " hours! </h3>";
                 $('#depth').append(depthTimeHtml);
                 queryBlock = true;
             }
@@ -152,7 +158,7 @@ function getAlbumLTInDepth(json){
 }
         
 function getTrackLT(user, artist, track){
-        $.getJSON("http://ws.audioscrobbler.com/2.0/?method=track.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&track=" + track + "&format=json&autocorrect=1", function(json) {
+        $.getJSON("https://ws.audioscrobbler.com/2.0/?method=track.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&track=" + track + "&format=json&autocorrect=1", function(json) {
             if(json.error != undefined){
             throwError(json);
             return;
