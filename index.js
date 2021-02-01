@@ -1,6 +1,4 @@
 //let userName = "";
-
-console.log();
 let totalTime = 0;
 let error = false;
 let userName = null;
@@ -8,52 +6,95 @@ let queryBlock = false;
 
 let albumJson = null;
 
+let reportArray = [];
+let reportCSV = '';
+
 //ljsdkajldsalsdaj TODO parseint pr heures, rajouter heures for track, check bug avec shrines of paralysis, implement album tout //court 
 
-function s2h(){
-        $('#error').empty();
-        error =false;
+function customReport(){
+    $('#error').empty();
+    error =false;
+    queryBlock = false;
+
+    userName = encodeURIComponent(document.getElementById("userNameInput").value);
+    userName.replace(" ", "+");
+    let artist = encodeURIComponent(document.getElementById("artistInput").value);
+    artist.replace(" ", "+");
+    let name = encodeURIComponent(document.getElementById("taInput").value);
+    name.replace(" ", "+");
         
-        queryBlock = false;
-        
-        userName = encodeURIComponent(document.getElementById("userNameInput").value);
-        userName.replace(" ", "+");
-        let artist = encodeURIComponent(document.getElementById("artistInput").value);
-        artist.replace(" ", "+");
-        let name = encodeURIComponent(document.getElementById("taInput").value);
-        name.replace(" ", "+");
-            
-        if (userName != "" && artist != "" && userName != "" ){
-            $("#result").empty(); 
-            $('#result').append("<hr>");
-            if(getSelectedValue("queryOption") == "track"){
-                getTrackLT(userName, artist, name);
-            }
-            else if(getSelectedValue("queryOption") == "album"){
-                getAlbum(userName, artist, name);
-            }
-            else{
-                var json = '{"message":"Please select a mode"}';
-                throwError(JSON.parse(json));
-            }
+    if (userName != "" && artist != "" && userName != "" ){
+        $("#result").empty(); 
+        $('#result').append("<hr>");
+        if(getSelectedValue("queryOption") == "track"){
+            getTrackLT(userName, artist, name);
+        }
+        else if(getSelectedValue("queryOption") == "album"){
+            getAlbumLT(userName, artist, name, -1);
         }
         else{
-            var json = '{"message" : "Please fill all fields"}';
+            var json = '{"message":"Please select a mode"}';
             throwError(JSON.parse(json));
         }
+    }
+    else{
+        var json = '{"message" : "Please fill all fields"}';
+        throwError(JSON.parse(json));
+    }
 }
+
+function topReport(){
+    $('#error').empty();
+    $('#result').empty();
+    error =false;
+    queryBlock = false;
+    
+    userName = encodeURIComponent(document.getElementById("userNameInput").value);
+    userName.replace(" ", "+");
+    
+    let queryMode = getSelectedValue("topQueryOption");
+    
+    $.getJSON("https://ws.audioscrobbler.com/2.0/?method=user.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryEntries") + "&period="+ getSelectedValue("topQueryPeriod") + "&format=json", function(json){
+        
+            topToHour(json, queryMode);
+        });
+        
+}
+
+
+function topToHour(json, topMethodOption){
+    if(topMethodOption == "tracks"){
+        $.each(json.toptracks.track, function(i, item){
+            getPlayTime(item, true);
+        });
+    }
+    else{
+        $.each(json.topalbums.album, function(i, item){
+            getAlbumLT(userName, item.artist.name, item.name, item.playcount, item["@attr"].rank);
+        });
+    }
+        
+    console.log(reportArray);
+    $(document).ajaxStop(function () {
+        /* Thought I'd need this cause when testing prior I'd get the albums in the wrong orders depending on the which query finished first. I'll leave it just in case.
+        reportArray.sort( (a,b) => {
+            return a.rank - b.rank;   
+        });*/ 
+        console.log(reportArray);
+
+    });
+}
+
+
 
 function throwError(json){
         $('#error').append("<h1> ERROR : " + json.message + " </h1>");
         error = true;
 }
 
-function blockQueries(){
-    queryBlock = true;
-}
         
         
-function getAlbum(user, artist, album){
+function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount -1 if the funciton is not called for the user.gettopalbums
     let albumDuration = 0;
     var totalTimeHtml = '';
     $.getJSON("https://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
@@ -61,16 +102,6 @@ function getAlbum(user, artist, album){
             throwError(json);
             return;
         }
-        /*
-            $.each(json, function(i, item) {
-                let jsonTracks = item.tracks.track;
-                for(i=0; i<jsonTracks.length; i++){
-                    tracks.push(jsonTracks[jsonTracks.length - 1 - i].name);
-                }
-                for(i=0; i<jsonTracks.length; i++){
-                getTrackLT(user, artist, tracks[i]);
-            }
-            });*/
         
         let jsonTracks = json.album.tracks.track;
         for(i=0; i<jsonTracks.length; i++){
@@ -78,14 +109,42 @@ function getAlbum(user, artist, album){
         }
         albumJson = json; // for use if user chooses in depth count
         
+        let userPlayCount;
+        if (userGetTopPlaycount == -1){
+            userPlayCount = json.album.userplaycount;
+        }
+        else{
+            userPlayCount = userGetTopPlaycount;
+        }
+        
+        let minutePlayTime = (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60);
+        //let hourPlayTime = (minutePlayTime/60).toFixed(2);
+        reportArray.push(constructObject(artist, album, userPlayCount, minutePlayTime, rank));
+        
+        
         $(document).ajaxStop(function () {
             if(!error){
-                let minutePlayTime = (albumDuration*parseInt(json.album.userplaycount) )/(jsonTracks.length*60);
-                let hourPlayTime = minutePlayTime/60;
+                /*let userPlayCount;
+                if (userGetTopPlaycount == -1){
+                    userPlayCount = json.album.userplaycount;
+                }
+                else{
+                    userPlayCount = userGetTopPlaycount;
+                }
                 
-                totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
-                totalTimeHtml += '<br> <a id="aDepth" onclick="getAlbumInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
-                $('#depth').append(totalTimeHtml);
+                let minutePlayTime = (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60);
+                let hourPlayTime = minutePlayTime/60;*/
+                
+                //totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
+                //$('#result').append(totalTimeHtml);
+
+                
+                if(userGetTopPlaycount == -1){
+                    var depthOption = '';
+                    depthOption += '<br> <a id="aDepth" onclick="getAlbumLTInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
+                    $('#depth').append(depthOption);
+                }
+                    
             }
         });
         
@@ -94,7 +153,7 @@ function getAlbum(user, artist, album){
 }
        
        
-function getAlbumInDepth(json){
+function getAlbumLTInDepth(json){
     if(!queryBlock){
         $('#depth').empty();
         $('#result').empty();
@@ -111,7 +170,7 @@ function getAlbumInDepth(json){
         $(document).ajaxStop(function () {
             if(!error){
                 let depthTimeHtml = '';
-                depthTimeHtml = "<h3> You listened to " + json.album.name + " a total of " + parseInt( totalTime) + " minutes or " + parseInt(totalTime/60) + " hours! </h3>";
+                depthTimeHtml = "<h3> You listened to " + json.album.name + " a total of " + parseInt( totalTime) + " minutes or " + totalTime/60 + " hours! </h3>";
                 $('#depth').append(depthTimeHtml);
                 queryBlock = true;
             }
@@ -125,27 +184,75 @@ function getTrackLT(user, artist, track){
             throwError(json);
             return;
             }
-            var html = '';
-            $.each(json, function(i, item) {
-                timeListened = getPlayTime(item);
-                html += constructResult(item, timeListened);
-            });
-            $('#result').append(html);
+            getPlayTime(json, jsonFromTop);
         });
+        
 }
 
 
-function getPlayTime(trackJson){
-            let name = trackJson.name;
-            let duration = trackJson.duration; 
-            let playcount = trackJson.userplaycount;
-            totalTime+= ( parseInt( (duration*playcount)/60000, 10) );
-            return ( parseInt( (duration*playcount)/60000, 10) );
+/*
+ * Calculates and displays the play time of a track
+ * trackJson : json of the track to calculate
+ * jsonFromTop : true if the json is the json from user.getTopTracks, false if from track.getInfo
+ */
+function getPlayTime(trackJson, jsonFromTop){
+    var html = '';
+    let name = trackJson.name;
+    let duration = trackJson.duration; 
+    let playcount = 0;
+    let time = 0;
+    let rank = null;   
+    
+    if(jsonFromTop){ //because the json from the track.getInfo and user.gettoptracks is not the same ...
+        playcount  = parseInt(trackJson.playcount);
+        time = (duration*playcount)/60;
+        let rank = trackJson["@attr"].rank;
+        reportArray.push(constructObject(trackJson.artist.name, name, playcount, time, rank));
+    }
+    else{
+        playcount = trackJson.userplaycount;
+        time = (duration*playcount)/60000;
+        reportArray.push(constructObject(trackJson.artist.name, name, playcount, time));
+
+    }
+    //totalTime+= time;
+    //html += constructResult(trackJson.artist.name, name, playcount, time );
+    //$('#result').append(html);
     
 }
 
-function constructResult(json, time){
-            return ("<p>" + json.artist.name + " - " + json.name + " - " + "Scrobbles : " + json.userplaycount + " Time listened : " + time + " minutes </p>");
+/*function constructObject(artist, name, pC, time){ //pC for playcount
+    let timeHour = time/60;
+    
+    var object = {
+      artist: artist,
+      title: name,
+      playcount: pC,
+      playtimeMinute: time,
+      playtimeHour: timeHour.toFixed(2)
+    };
+    
+    return object;
+}*/
+
+function constructObject(artist, name, pC, time, rank){ //pC for playcount
+    let timeHour = time/60;
+    
+    var object = {
+      artist: artist,
+      title: name,
+      playcount: pC,
+      playtimeMinute: time,
+      playtimeHour: timeHour.toFixed(2)
+    };
+    if(rank != undefined){
+        object.rank = rank;
+    }
+    return object;
+}
+
+function constructResult(artist, name, playcount, time){
+            return ("<p>" + artist+ " - " + name + " - " + "Scrobbles : " + playcount + " Time listened : " + time + " minutes or " + parseInt(time/60) + " hours! </p>");
 }
 
 //function getInputValue() {
