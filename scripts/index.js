@@ -117,7 +117,7 @@ function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount
             userPlayCount = userGetTopPlaycount;
         }
         
-        let minutePlayTime = (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60);
+        let minutePlayTime = parseInt( (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60) );
         //let hourPlayTime = (minutePlayTime/60).toFixed(2);
         reportArray.push(constructObject(artist, album, userPlayCount, minutePlayTime, rank));
         
@@ -138,7 +138,7 @@ function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount
                 //totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
                 //$('#result').append(totalTimeHtml);
 
-                
+                    console.log(reportArray);
                 if(userGetTopPlaycount == -1){
                     var depthOption = '';
                     depthOption += '<br> <a id="aDepth" onclick="getAlbumLTInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
@@ -169,9 +169,11 @@ function getAlbumLTInDepth(json){
 
         $(document).ajaxStop(function () {
             if(!error){
+                
+                /*
                 let depthTimeHtml = '';
                 depthTimeHtml = "<h3> You listened to " + json.album.name + " a total of " + parseInt( totalTime) + " minutes or " + totalTime/60 + " hours! </h3>";
-                $('#depth').append(depthTimeHtml);
+                $('#depth').append(depthTimeHtml);*/
                 queryBlock = true;
             }
         });
@@ -243,7 +245,7 @@ function constructObject(artist, name, pC, time, rank){ //pC for playcount
       title: name,
       playcount: pC,
       playtimeMinute: time,
-      playtimeHour: timeHour.toFixed(2)
+      playtimeHour: timeHour.toFixed(1)
     };
     if(rank != undefined){
         object.rank = rank;

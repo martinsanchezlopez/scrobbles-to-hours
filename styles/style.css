@@ -1,0 +1,52 @@
+body {
+    text-align: center;
+}
+
+h2{
+    color: white;
+}
+
+#userNameInput{
+    margin:15px;
+}
+
+#main-window{
+    background-color: #b90000;
+    //width: 60%;
+    //margin-left:50px;
+    text-align: center;
+    padding: 15px;
+    margin: 15px;
+    margin-right: 10%;
+    margin-left: 10%;
+    border: 5px solid black;
+}
+
+#option2{
+}
+
+#invis {
+  padding: 20px;
+  display: none;
+  width: 50%;
+}
+
+#aDepth{
+    background-color: #b90000;
+    color:white;
+    border-radius: 25px;
+    border: 2px solid black;
+    padding: 20px; 
+}
+
+#aDepth:hover{
+    background-color: #8d0000;
+}
+  
+#aDepth:hover + #invis {
+    background-color: #b90000;
+    position: absolute;
+    border: 2px solid black;
+    display: block;
+    z-index:1000;
+}

@@ -4,65 +4,71 @@
 <meta charset="ISO-8859-1"> 
 
 <title>Scrobble2Hours</title>
-<link rel="icon" href="s2h_icon.png">
+<link rel="icon" href="res/s2h_icon.png">
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<link rel="stylesheet" type="text/css" href="menu.css">
+<link rel="stylesheet" type="text/css" href="styles/style.css">
 
 </style>
 </head>
 
 <body>
+<img src="res/s2h_logo500x500.png" alt="scrobble to hours logo" width="27px"></img>
+<h1 style="display: inline"> Scrobble To Hours </h1><br>
 
-<h1> Scrobble to hours </h1>
-    <input class="grid-item" type="text" placeholder="Last.fm username... " id="userNameInput">
+
+ <!--Custom tracks/albums search-->
+<div id="main-window">
+    <input type="text" placeholder="Last.fm username... " id="userNameInput" size="15">
     
-    <div class="grid-container">
-    <h2>Get all time listening time of an album/track </h2>
-    <select class="grid-item" id="queryOption">
-            <option value=null selected>-- Select --</option>
+
+
+ <!--Top most listened tracks/albums-->
+<div id="option2">
+    <h2>Get top albums/tracks listening time</h2>
+        <select id="topQueryOption">
+            <option value=null selected>-- Mode --</option>
+            <option value="albums">Albums</option>
+            <option value="tracks">Tracks</option>
+        </select>
+        <select id="topQueryPeriod">
+            <option value="7day">Last Week</option>
+            <option value="1month">Last Month</option>
+            <option value="3month" selected>Last 3 Months</option>
+            <option value="6month">Last 6 Months</option>
+            <option value="12month">Last 12 Months</option>
+            <option value="overall">All Time</option>
+        </select>
+        <select id="topQueryEntries">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+        </select>
+        <button type="button" onclick="topReport()"><b>Go</b></button>
+</div>  
+
+<h2>or</h2>
+
+<div>
+    <h2>Search for a specific album/track</h2>
+    <select id="queryOption" size="1">
+            <option value=null selected>-- Mode --</option>
             <option value="album">Album</option>
             <option value="track">Track</option>
         </select>
-        <input class="grid-item" type="text" placeholder="Artist... " id="artistInput">
-    <input class="grid-item" type="text" placeholder="Track/Album..." id="taInput">
-        <button class="grid-item" type="button" onclick="customReport()"><b>Go</b></button>
-</div>  
+        <input  type="text" placeholder="Artist... " id="artistInput" size="15">
+    <input  type="text" placeholder="Track/Album..." id="taInput">
+    <button type="button" onclick="customReport()"><b>Go</b></button>
+</div>
 
-<h2>OR</h2>
-
-<div class="grid-container">
-<h2>Get top albums/tracks listening time in the chose time frame</h2>
-    <select class="grid-item" id="topQueryOption">
-        <option value=null selected>-- Mode --</option>
-        <option value="albums">Albums</option>
-        <option value="tracks">Tracks</option>
-    </select>
-    <select class="grid-item" id="topQueryPeriod">
-        <option value=null selected>-- Period --</option>
-        <option value="overall">All Time</option>
-        <option value="12month">Last 12 Months</option>
-        <option value="6month">Last 6 Months</option>
-        <option value="3month">Last 3 Months</option>
-        <option value="1month">Last Month</option>
-        <option value="7day">Last Week</option>
-    </select>
-    <select class="grid-item" id="topQueryEntries">
-        <option value=null selected>-- Number of entries --</option>
-        <option value="5">5</option>
-        <option value="10">10</option>
-        <option value="15">15</option>
-        <option value="25">25</option>
-        <option value="50">50</option>
-    </select>
-        <button class="grid-item" type="button" onclick="topReport()"><b>Go</b></button>
-</div>  
-
+</div>
 </div>
 </body>
 
-<script src="index.js"> </script>
-<script src="menus.js"></script>
+<script src="scripts/index.js"> </script>
+<script src="scripts/menus.js"></script>
 
 <div id="result"> </div>
 <div id="error"> </div> 
