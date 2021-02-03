@@ -44,8 +44,7 @@ function customReport(){
         throwError(JSON.parse(json));
     }
     
-    
-}
+    }
 
 function topReport(){
     $('#error').empty();
