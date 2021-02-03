@@ -13,8 +13,11 @@ let reportCSV = '';
 
 function customReport(){
     $('#error').empty();
+    $('#result').empty();
     error =false;
     queryBlock = false;
+    let reportArray = [];
+
 
     userName = encodeURIComponent(document.getElementById("userNameInput").value);
     userName.replace(" ", "+");
@@ -41,6 +44,10 @@ function customReport(){
         var json = '{"message" : "Please fill all fields"}';
         throwError(JSON.parse(json));
     }
+    
+    $(document).ajaxStop(function (){
+       getResultTable(); 
+    });
 }
 
 function topReport(){
@@ -48,6 +55,8 @@ function topReport(){
     $('#result').empty();
     error =false;
     queryBlock = false;
+    let reportArray = [];
+
     
     userName = encodeURIComponent(document.getElementById("userNameInput").value);
     userName.replace(" ", "+");
@@ -58,7 +67,11 @@ function topReport(){
         
             topToHour(json, queryMode);
         });
-        
+    
+    $(document).ajaxStop(function (){
+       getResultTable(); 
+    });
+
 }
 
 
@@ -74,12 +87,11 @@ function topToHour(json, topMethodOption){
         });
     }
         
-    console.log(reportArray);
     $(document).ajaxStop(function () {
-        /* Thought I'd need this cause when testing prior I'd get the albums in the wrong orders depending on the which query finished first. I'll leave it just in case.
+        //Thought I'd need this cause when testing prior I'd get the albums in the wrong orders depending on the which query finished first. I'll leave it just in case.
         reportArray.sort( (a,b) => {
             return a.rank - b.rank;   
-        });*/ 
+        }); 
         console.log(reportArray);
 
     });
@@ -122,7 +134,7 @@ function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount
         reportArray.push(constructObject(artist, album, userPlayCount, minutePlayTime, rank));
         
         
-        $(document).ajaxStop(function () {
+        //$(document).ajaxStop(function () {
             if(!error){
                 /*let userPlayCount;
                 if (userGetTopPlaycount == -1){
@@ -138,7 +150,6 @@ function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount
                 //totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
                 //$('#result').append(totalTimeHtml);
 
-                    console.log(reportArray);
                 if(userGetTopPlaycount == -1){
                     var depthOption = '';
                     depthOption += '<br> <a id="aDepth" onclick="getAlbumLTInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
@@ -146,10 +157,10 @@ function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount
                 }
                     
             }
-        });
+        //});
         
             
-    });
+    }); // end OF JSON FUNCTION
 }
        
        
@@ -186,7 +197,7 @@ function getTrackLT(user, artist, track){
             throwError(json);
             return;
             }
-            getPlayTime(json, jsonFromTop);
+            getPlayTime(json.track, false);
         });
         
 }
@@ -239,17 +250,27 @@ function getPlayTime(trackJson, jsonFromTop){
 
 function constructObject(artist, name, pC, time, rank){ //pC for playcount
     let timeHour = time/60;
+    let object = {};
     
+    if(rank != undefined){
+        object.rank = rank;
+    }
+    /*
     var object = {
       artist: artist,
       title: name,
       playcount: pC,
       playtimeMinute: time,
       playtimeHour: timeHour.toFixed(1)
-    };
-    if(rank != undefined){
-        object.rank = rank;
-    }
+    };*/
+    
+    object.artist = artist;
+    object.name = name;
+    object.playcount= pC;
+    object.playcountMinute= time;
+    object.playcountHour= timeHour.toFixed(1);
+
+
     return object;
 }
 
