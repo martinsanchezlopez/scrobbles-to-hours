@@ -16,8 +16,7 @@ function customReport(){
     $('#result').empty();
     error =false;
     queryBlock = false;
-    let reportArray = [];
-
+    reportArray.length = 0; // reportArray = [] won't work
 
     userName = encodeURIComponent(document.getElementById("userNameInput").value);
     userName.replace(" ", "+");
@@ -45,9 +44,7 @@ function customReport(){
         throwError(JSON.parse(json));
     }
     
-    $(document).ajaxStop(function (){
-       getResultTable(); 
-    });
+    
 }
 
 function topReport(){
@@ -55,7 +52,7 @@ function topReport(){
     $('#result').empty();
     error =false;
     queryBlock = false;
-    let reportArray = [];
+    reportArray.length = 0;
 
     
     userName = encodeURIComponent(document.getElementById("userNameInput").value);
@@ -68,9 +65,6 @@ function topReport(){
             topToHour(json, queryMode);
         });
     
-    $(document).ajaxStop(function (){
-       getResultTable(); 
-    });
 
 }
 
@@ -87,14 +81,9 @@ function topToHour(json, topMethodOption){
         });
     }
         
-    $(document).ajaxStop(function () {
-        //Thought I'd need this cause when testing prior I'd get the albums in the wrong orders depending on the which query finished first. I'll leave it just in case.
-        reportArray.sort( (a,b) => {
-            return a.rank - b.rank;   
-        }); 
-        console.log(reportArray);
-
-    });
+        //reportArray.sort( (a,b) => {
+          //  return a.rank - b.rank;   
+        //});
 }
 
 
@@ -178,7 +167,6 @@ function getAlbumLTInDepth(json){
         getTrackLT(userName, json.album.artist, tracks[i]);
         }
 
-        $(document).ajaxStop(function () {
             if(!error){
                 
                 /*
@@ -187,7 +175,6 @@ function getAlbumLTInDepth(json){
                 $('#depth').append(depthTimeHtml);*/
                 queryBlock = true;
             }
-        });
     }
 }
         

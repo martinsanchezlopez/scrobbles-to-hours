@@ -1,9 +1,13 @@
 
-function getResultTable(){
-    resultHtml = '<table><tr>';
+function buildResultTable(){
+    
+    let resultHtml = '<table><tr>';
     
     
     if(reportArray[0].rank != undefined){
+        reportArray.sort( (a,b) => {
+            return a.rank - b.rank;   
+        });
         resultHtml += '<th>#</th>';
     }
     
@@ -21,7 +25,15 @@ function getResultTable(){
     
     resultHtml += '</table>';
     $('#result').append(resultHtml);
+    
+    
 }
+
+
+$(document).ajaxStop(function (){
+    buildResultTable(); 
+});
+
 
 
 
