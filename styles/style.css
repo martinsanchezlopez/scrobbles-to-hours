@@ -7,7 +7,7 @@ h2{
 }
 
 #userNameInput{
-    margin:15px;
+    margin:1%;
 }
 
 #main-window{
@@ -15,10 +15,10 @@ h2{
     //width: 60%;
     //margin-left:50px;
     text-align: center;
-    padding: 15px;
-    margin: 15px;
-    margin-right: 10%;
-    margin-left: 10%;
+    padding: 2%;
+    margin: 1%;
+    margin-right: 5%;
+    margin-left: 5%;
     border: 5px solid black;
 }
 
@@ -26,7 +26,7 @@ h2{
 }
 
 #invis {
-  padding: 20px;
+  padding: 2%;
   display: none;
   width: 50%;
 }
@@ -36,7 +36,7 @@ h2{
     color:white;
     border-radius: 25px;
     border: 2px solid black;
-    padding: 20px; 
+    padding: 2%; 
 }
 
 #aDepth:hover{
