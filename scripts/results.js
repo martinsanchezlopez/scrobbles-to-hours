@@ -1,7 +1,7 @@
 
 function buildResultTable(){
     
-    resultHtml = '<table><tr>';
+    let resultHtml = '<table><tr>';
     
     
     if(reportArray[0].rank != undefined){
