@@ -50,3 +50,13 @@ h2{
     display: block;
     z-index:1000;
 }
+
+
+th{
+ 
+}
+table, td {
+    border: 1px solid black;   
+    margin-left: 20%;
+    margin-right: 20%; 
+}
