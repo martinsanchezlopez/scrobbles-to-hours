@@ -253,8 +253,8 @@ function constructObject(artist, name, pC, time, rank){ //pC for playcount
     object.artist = artist;
     object.name = name;
     object.playcount= pC;
-    object.playcountMinute= parseInt(time);
     object.playcountHour= timeHour.toFixed(1);
+    object.playcountMinute= parseInt(time);
 
 
     return object;

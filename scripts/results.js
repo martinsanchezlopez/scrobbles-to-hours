@@ -1,13 +1,33 @@
-let rankedByScrobbles = true;
+let rankedByScrobbles = false; //default : ranked by playtime and NOT playcount
+let timeUnitHour = true; //default time is set to hours
 
-function switchRank(){
+
+/*
+ * Change sorting of the result table between playcount and playtime
+ */
+function switchSort(){
     rankedByScrobbles = !rankedByScrobbles;
     buildResultTable();
     if(rankedByScrobbles){ //ranked by playcount
-        document.getElementById("sort").innerHTML = "Rank by time listened";
+        document.getElementById("sortButton").innerHTML = "Sort by playtime";
     }
     else{
-        document.getElementById("sort").innerHTML = "Rank by scrobbles";
+        document.getElementById("sortButton").innerHTML = "Sort by scrobbles";
+    }
+}
+
+
+/*
+ * Change time unit of the result table
+ */
+function switchTimeUnit(){
+    timeUnitHour = !timeUnitHour;
+    buildResultTable();
+    if(timeUnitHour){
+        document.getElementById("timeUnitButton").innerHTML = "Display time in minutes";
+    }
+    else{
+        document.getElementById("timeUnitButton").innerHTML = "Display time in hours";
     }
 }
 
@@ -16,8 +36,10 @@ function switchRank(){
 
 function buildResultTable(){
     $('#result').empty();
-    
-    let resultHtml = '<button type="button" onclick="switchRank();" id="sort">Rank by listened time</button><table id="resultTable"><tr>';
+    let time;
+    let resultHtml = '<button type="button" onclick="switchSort();" id="sortButton">Sort by scrobbles</button>' +
+    '<button type="button" onclick="switchTimeUnit();" id="timeUnitButton">Display time in minutes</button>' +
+    '<table id="resultTable"><tr>';
     
     if(reportArray[0].rank != undefined){
         
@@ -35,13 +57,23 @@ function buildResultTable(){
         });
     }
     
-    resultHtml += '<th>Artist</th><th>Title</th><th>Scrobbles</th><th>Minutes Listened</th><th>Hours Listened</th></tr>';
+    
+    if(timeUnitHour){
+        time = 'Hours';
+    }
+    else{
+        time = 'Minutes';   
+    }
+    
+    resultHtml += '<th>Artist</th><th>Title</th><th>Scrobbles</th><th>' + time + 'Listened </tr>';
     
     for(i=0; i<reportArray.length; i++){
         resultHtml += '<tr>';
-        for (let value of Object.values(reportArray[i])){
+        for (let entry of Object.entries(reportArray[i])){
             
-            resultHtml += '<td>' + value + '</td>';
+            if( (timeUnitHour && entry[0] != "playcountMinute") || (!timeUnitHour && entry[0] != "playcountHour")){
+                resultHtml += '<td>' + entry[1] + '</td>';
+            }
         }
         resultHtml += '</tr>';
     }

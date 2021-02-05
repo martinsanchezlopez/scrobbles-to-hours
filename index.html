@@ -15,7 +15,7 @@
 
 <body onload="testTable()">
 <img src="res/s2h_logo500x500.png" alt="scrobble to hours logo" width="27px"></img>
-<h1 style="display: inline"> Scrobble To Hours </h1><br>
+<h1 style="display: inline"> Scrobble To Hours </h1>
 
 
 <div id="main-window">
@@ -23,7 +23,7 @@
     
 
 
- <!--Top most listened tracks/albums-->
+<!--Top most listened tracks/albums-->
 <div id="option2">
     <h2>Get top albums/tracks listening time</h2>
         <select id="topQueryOption">
@@ -59,22 +59,21 @@
             <option value="album">Album</option>
             <option value="track">Track</option>
         </select>
-        <input  type="text" placeholder="Artist... " id="artistInput" size="12">
-    <input  type="text" placeholder="Track/Album..." id="taInput" size="12">
+        <input  type="text" placeholder="Artist... " id="artistInput" size="8">
+    <input  type="text" placeholder="Track/Album..." id="taInput" size="8">
     <button type="button" onclick="customReport()"><b>Go</b></button>
 </div>
 
 </div>
 </div>
 </body>
-
 <script src="scripts/index.js"> </script>
 <script src="scripts/menus.js"></script>
 <script src="scripts/results.js"></script>
 <script src="test.js"></script>
 
 
-<div id="result"> </div>
-<div id="error"> </div> 
-<div id="depth"> </div>
+<div id="result" style="overflow-x:auto;"> </div>
+<div id="error" style="overflow-x:auto;"> </div> 
+<div id="depth" style="overflow-x:auto;"> </div>
 </html>
