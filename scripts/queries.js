@@ -1,19 +1,47 @@
-//let userName = "";
-let totalTime = 0;
-let error = false;
-let userName = null;
-let queryBlock = false;
-
-let albumJson = null;
-
+/* RESULT ARRAY
+ * results end up here. Emptied after every searched.
+ * 
+ * For structure of result see constructObject() in data.js
+ * 
+ * Tables and downloadables are made from this array. Handled in results.js
+ * 
+ */
 let reportArray = [];
-let reportCSV = '';
 
-//ljsdkajldsalsdaj TODO parseint pr heures, rajouter heures for track, check bug avec shrines of paralysis, implement album tout //court 
 
+
+
+let error = false;
+/*
+ * Append error message to page of a json.
+ */
+function throwError(json){
+        $('#error').append("<h1> ERROR : " + json.message + " </h1>");
+        error = true;
+}
+
+
+
+
+
+/////////////////////////////////////////////////////   MAIN QUERY FUNCTIONS /////////////////////////////////////////////////
+
+let userName = null;
+let queryBlock = false; //used to avoid pointless heavy queries to be spammed
+
+/* Retrieve selected search options
+ */
+function getSelectedValue(form){
+    var e = document.getElementById(form);
+    return e.options[e.selectedIndex].value;
+}
+
+/*
+ * Gets playtime of custom album/track entered by user. Returns nothing. Appends 1-row table to page.
+ * If an album, button appears allowing in-depth (song by song) count.
+ */
 function customReport(){
     $('#error').empty();
-    $('#result').empty();
     error =false;
     queryBlock = false;
     reportArray.length = 0; // reportArray = [] won't work
@@ -25,14 +53,13 @@ function customReport(){
     let name = encodeURIComponent(document.getElementById("taInput").value);
     name.replace(" ", "+");
         
-    if (userName != "" && artist != "" && userName != "" ){
-        $("#result").empty(); 
-        $('#result').append("<hr>");
+    if (userName != "" && artist != "" && name != "" ){
+        
         if(getSelectedValue("queryOption") == "track"){
             getTrackLT(userName, artist, name);
         }
         else if(getSelectedValue("queryOption") == "album"){
-            getAlbumLT(userName, artist, name, -1);
+            getAlbumListeningTime(userName, artist, name, -1);
         }
         else{
             var json = '{"message":"Please select a mode"}';
@@ -44,30 +71,60 @@ function customReport(){
         throwError(JSON.parse(json));
     }
     
-    }
+}
 
+    
+/*
+ * Gets playtime of custom album/track entered by user. Returns nothing. Appends table with the top titles to page.
+ */
 function topReport(){
     $('#error').empty();
-    $('#result').empty();
-    error =false;
-    queryBlock = false;
+    error = false;
     reportArray.length = 0;
-
     
     userName = encodeURIComponent(document.getElementById("userNameInput").value);
-    userName.replace(" ", "+");
+        userName.replace(" ", "+");
     
-    let queryMode = getSelectedValue("topQueryOption");
+    if(getSelectedValue("topQueryOption") == "undef"){
+        var json = '{"message":"Please select a mode"}';
+        throwError(JSON.parse(json));
+    }
+    if(userName == ''){
+        var json = '{"message":"Please type your username"}';
+        throwError(JSON.parse(json));
+    }
     
-    $.getJSON("https://ws.audioscrobbler.com/2.0/?method=user.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryEntries") + "&period="+ getSelectedValue("topQueryPeriod") + "&format=json", function(json){
-        
+    if (!error){
+        let queryMode = getSelectedValue("topQueryOption");
+
+        $.getJSON("https://ws.audioscrobbler.com/2.0/?method=user.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryEntries") + "&period="+ getSelectedValue("topQueryPeriod") + "&format=json", function(json){
             topToHour(json, queryMode);
         });
-    
 
+    }
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////   ALBUM FUNCTIONS /////////////////////////////////////////////////
+
+let albumJson = null; //used to save json in case user want in depth report
+
+
+/*
+ * Calculates playtime from given json.
+ * Parameter : topMethodOption, boolean indicates the attribute to take into account depending on the json and the search option of the user.
+ */
 function topToHour(json, topMethodOption){
     if(topMethodOption == "tracks"){
         $.each(json.toptracks.track, function(i, item){
@@ -76,25 +133,17 @@ function topToHour(json, topMethodOption){
     }
     else{
         $.each(json.topalbums.album, function(i, item){
-            getAlbumLT(userName, item.artist.name, item.name, item.playcount, item["@attr"].rank);
+            getAlbumListeningTime(userName, item.artist.name, item.name, item.playcount, item["@attr"].rank);
         });
     }
-        
-        //reportArray.sort( (a,b) => {
-          //  return a.rank - b.rank;   
-        //});
 }
 
 
 
-function throwError(json){
-        $('#error').append("<h1> ERROR : " + json.message + " </h1>");
-        error = true;
-}
-
         
-        
-function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount -1 if the funciton is not called for the user.gettopalbums
+      
+      
+function getAlbumListeningTime(user, artist, album, userGetTopPlaycount, rank){ //playcount -1 if the funciton is not called for the user.gettopalbums
     let albumDuration = 0;
     var totalTimeHtml = '';
     $.getJSON("https://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
@@ -118,29 +167,13 @@ function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount
         }
         
         let minutePlayTime = parseInt( (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60) );
-        //let hourPlayTime = (minutePlayTime/60).toFixed(2);
         reportArray.push(constructObject(artist, album, userPlayCount, minutePlayTime, rank));
         
         
-        //$(document).ajaxStop(function () {
             if(!error){
-                /*let userPlayCount;
-                if (userGetTopPlaycount == -1){
-                    userPlayCount = json.album.userplaycount;
-                }
-                else{
-                    userPlayCount = userGetTopPlaycount;
-                }
-                
-                let minutePlayTime = (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60);
-                let hourPlayTime = minutePlayTime/60;*/
-                
-                //totalTimeHtml = "<h3> You listened to " + album.replace("+", " ") + " a total of " + parseInt( minutePlayTime) + " minutes or " + parseInt(hourPlayTime) + " hours! </h3>";
-                //$('#result').append(totalTimeHtml);
-
                 if(userGetTopPlaycount == -1){
                     var depthOption = '';
-                    depthOption += '<br> <a id="aDepth" onclick="getAlbumLTInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
+                    depthOption += '<br> <a id="aDepth" onclick="getAlbumListeningTimeInDepth(albumJson);">In depth time count</a><div id="invis">This will give you a more accurate time, specially if you scrobbles are not equitably distributed among the tracks of the album. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
                     $('#depth').append(depthOption);
                 }
                     
@@ -152,10 +185,9 @@ function getAlbumLT(user, artist, album, userGetTopPlaycount, rank){ //playcount
 }
        
        
-function getAlbumLTInDepth(json){
+function getAlbumListeningTimeInDepth(json){
     if(!queryBlock){
         $('#depth').empty();
-        $('#result').empty();
         totalTime = 0;
         let tracks = [];
         let jsonTracks = json.album.tracks.track;
@@ -177,6 +209,22 @@ function getAlbumLTInDepth(json){
     }
 }
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+/////////////////////////////////////////////////////   TRACK FUNCTIONS /////////////////////////////////////////////////
+        
+/*
+ * Queries for a give track (song!) and calculates it's play time.
+ * Result is appended to the reportArray, displayed when no queries are left.
+ */
 function getTrackLT(user, artist, track){
         $.getJSON("https://ws.audioscrobbler.com/2.0/?method=track.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&track=" + track + "&format=json&autocorrect=1", function(json) {
             if(json.error != undefined){
@@ -190,9 +238,9 @@ function getTrackLT(user, artist, track){
 
 
 /*
- * Calculates and displays the play time of a track
+ * Calculates and displays the play time of a track from a given json.
  * trackJson : json of the track to calculate
- * jsonFromTop : true if the json is the json from user.getTopTracks, false if from track.getInfo
+ * jsonFromTop : true if the json is the json from user.getTopTracks (topReport), false if from track.getInfo (customReport)
  */
 function getPlayTime(trackJson, jsonFromTop){
     var html = '';
@@ -214,57 +262,5 @@ function getPlayTime(trackJson, jsonFromTop){
         reportArray.push(constructObject(trackJson.artist.name, name, playcount, time));
 
     }
-    //totalTime+= time;
-    //html += constructResult(trackJson.artist.name, name, playcount, time );
-    //$('#result').append(html);
-    
 }
 
-/*function constructObject(artist, name, pC, time){ //pC for playcount
-    let timeHour = time/60;
-    
-    var object = {
-      artist: artist,
-      title: name,
-      playcount: pC,
-      playtimeMinute: time,
-      playtimeHour: timeHour.toFixed(2)
-    };
-    
-    return object;
-}*/
-
-function constructObject(artist, name, pC, time, rank){ //pC for playcount
-    let timeHour = time/60;
-    let object = {};
-    
-    if(rank != undefined){
-        object.rank = rank;
-    }
-    /*
-    var object = {
-      artist: artist,
-      title: name,
-      playcount: pC,
-      playtimeMinute: time,
-      playtimeHour: timeHour.toFixed(1)
-    };*/
-    
-    object.artist = artist;
-    object.name = name;
-    object.playcount= pC;
-    object.playcountHour= timeHour.toFixed(1);
-    object.playcountMinute= parseInt(time);
-
-
-    return object;
-}
-
-function constructResult(artist, name, playcount, time){
-            return ("<p>" + artist+ " - " + name + " - " + "Scrobbles : " + playcount + " Time listened : " + time + " minutes or " + parseInt(time/60) + " hours! </p>");
-}
-
-//function getInputValue() {
-        // Selecting the input element and get its value 
-      //  userName = document.getElementById("userNameInput").value;
-  //    }

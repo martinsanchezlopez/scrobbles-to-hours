@@ -53,10 +53,6 @@ input, button, select{
     margin:1%;
 }
 
-table{
-    
-}
-
 table, td {
     border: 1px solid black;
     margin-left: auto;

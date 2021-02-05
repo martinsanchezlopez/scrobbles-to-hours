@@ -13,13 +13,13 @@
 </style>
 </head>
 
-<body onload="testTable()">
+<body>
 <img src="res/s2h_logo500x500.png" alt="scrobble to hours logo" width="27px"></img>
 <h1 style="display: inline"> Scrobble To Hours </h1>
 
 
 <div id="main-window">
-    <input type="text" placeholder="Last.fm username... " id="userNameInput" size="15">
+    <input type="text" placeholder="Last.fm username... " id="userNameInput" size="12">
     
 
 
@@ -27,7 +27,7 @@
 <div id="option2">
     <h2>Get top albums/tracks listening time</h2>
         <select id="topQueryOption">
-            <option value=null selected>-- Mode --</option>
+            <option value="undef" selected>-- Mode --</option>
             <option value="albums">Albums</option>
             <option value="tracks">Tracks</option>
         </select>
@@ -46,31 +46,35 @@
             <option value="25">25</option>
             <option value="50">50</option>
         </select>
+        <br>
         <button type="button" onclick="topReport()"><b>Go</b></button>
 </div>  
 
-<h2>or</h2>
+<br>
+<hr color="white">
+<br>
+
 
 <!--Custom tracks/albums search-->
 <div>
     <h2>Search for a specific album/track</h2>
     <select id="queryOption" >
-            <option value=null selected>-- Mode --</option>
-            <option value="album">Album</option>
-            <option value="track">Track</option>
-        </select>
-        <input  type="text" placeholder="Artist... " id="artistInput" size="8">
-    <input  type="text" placeholder="Track/Album..." id="taInput" size="8">
+        <option value='undef' selected>-- Mode --</option>
+        <option value="album">Album</option>
+        <option value="track">Track</option>
+    </select>
+    <input  type="text" placeholder="Artist... " id="artistInput" size="10">
+    <input  type="text" placeholder="Track/Album..." id="taInput" size="10">
+    <br>
     <button type="button" onclick="customReport()"><b>Go</b></button>
 </div>
 
 </div>
 </div>
 </body>
-<script src="scripts/index.js"> </script>
-<script src="scripts/menus.js"></script>
+<script src="scripts/queries.js"> </script>
+<script src="scripts/data.js"> </script>
 <script src="scripts/results.js"></script>
-<script src="test.js"></script>
 
 
 <div id="result" style="overflow-x:auto;"> </div>

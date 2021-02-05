@@ -90,11 +90,5 @@ $(document).ajaxStop(function (){
 });
 
 
-function testTable(){
-    reportArray = testArray;
-    buildResultTable();
-    
-}
-
 
 
