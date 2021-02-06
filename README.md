@@ -1,4 +1,4 @@
-![Scrobbles to Hours Logo](/res/readmeImg.png)
+![Scrobbles to Hours Logo | width=100](/res/readmeImg.png)
 
 Scrobbles to Hours is Last.fm tool to convert a user's scrobbles(playcount) to hours.
 One can either get the playtime to his recently most listened tracks/albums or the alltime playtime a given album/track. Results are dependant on the user's data, any titles with metadata different from the official last.fm will not get picked up by the API and thus this Scrobbles to Hours.
