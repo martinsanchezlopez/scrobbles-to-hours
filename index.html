@@ -73,10 +73,32 @@
 </div>
 </body>
 
+<div id="resultButtons" style="overflow-x:auto;">
+    <hr>
+    <button type="button" onclick="switchSort();" id="sortButton">Sort by scrobbles</button>
+    <button type="button" onclick="switchTimeUnit();" id="timeUnitButton">Display time in minutes</button>
+</div>
+
+
+<div id="load" style="overflow-x:auto;"></div>
+
 <div id="result" style="overflow-x:auto;"> </div>
 <div id="error" style="overflow-x:auto;"> </div> 
 <div id="depth" style="overflow-x:auto;"> </div>
-<div id="download" style="overflow-x:auto;"> </div>
+
+
+
+<div id="download" style="overflow-x:auto;">
+    <button onclick="downloadCSV()">Download results (CSV)</button>
+</div>
+
+
+<br>
+<hr>
+<div class="info">
+    <a href="https://github.com/martinsanchezlopez/scrobbles-to-hours" class="info">Source Code </a>
+    <p class="info"> Found an Issue? <br>Submit an "Issue" on the link above or <br> send me an <a href="mailto:scrobblestohours@gmail.com">email</a> </p>
+</div>
 
 
 

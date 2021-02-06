@@ -6,6 +6,20 @@ let blockAjaxStop = false;
 
 let csv;
 
+$(document).ajaxStop(function (){
+    if(!blockAjaxStop){ //dumb solution to not make table when calling the countingAPI
+        buildResultTable(); 
+        queryBlock = false;
+    }
+    else{
+        blockAjaxStop = false;
+    }
+});
+
+
+
+
+
 /*
  * Change sorting of the result table between playcount and playtime
  */
@@ -40,10 +54,12 @@ function switchTimeUnit(){
 
 function buildResultTable(){
     $('#result').empty();
+    document.getElementById("load").innerHTML = "Constructing result table...";
+    document.getElementById("resultButtons").style.display = "none";
+    document.getElementById("download").style.display = "none";
     let time;
-    let resultHtml = '<button type="button" onclick="switchSort();" id="sortButton">Sort by scrobbles</button>' +
-    '<button type="button" onclick="switchTimeUnit();" id="timeUnitButton">Display time in minutes</button>' +
-    '<table id="resultTable"><tr>';
+    
+    let resultHtml = '<table id="resultTable"><tr>';
     
     if(reportArray[0].rank != undefined){
         
@@ -69,7 +85,7 @@ function buildResultTable(){
         time = 'Minutes';   
     }
     
-    resultHtml += '<th>Artist</th><th>Title</th><th>Scrobbles</th><th>' + time + 'Listened </tr>';
+    resultHtml += '<th>Artist</th><th>Title</th><th>' + time + 'Listened</th><th>Scrobbles</th></tr>';
     
     for(i=0; i<reportArray.length; i++){
         resultHtml += '<tr>';
@@ -84,28 +100,17 @@ function buildResultTable(){
     
     resultHtml += '</table>';
     $('#result').append(resultHtml);
-    makeDownloadLinks();
+    document.getElementById("resultButtons").style.display = "block";
+    document.getElementById("download").style.display = "block";
+    document.getElementById("load").innerHTML = "";
     
 }
 
 
-$(document).ajaxStop(function (){
-    if(!blockAjaxStop){ //dumb solution to not make table when calling the countingAPI
-        buildResultTable(); 
-    }
-    else{
-        blockAjaxStop = false;
-    }
-});
 
 
 
 
-
-function makeDownloadLinks(){
-    let downloadHtml = '<button onclick="downloadCSV()">Download results (CSV)</button>';
-    $('#download').append(downloadHtml);
-}
 
 
 

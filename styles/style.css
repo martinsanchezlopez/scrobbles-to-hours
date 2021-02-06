@@ -6,6 +6,10 @@ h2{
     color: white;
 }
 
+#resultButtons, #download{
+    display:none;
+}
+
 #userNameInput{
     margin:1%;
 }
@@ -49,11 +53,18 @@ h2{
     z-index:1000;
 }
 
+
+.info{
+    text-align: right;
+    font-size: 12px;
+}
+
 input, button, select{
     margin:1%;
 }
 
 table, td {
+    margin-bottom: 1%;
     border: 1px solid black;
     margin-left: auto;
     margin-right: auto;
