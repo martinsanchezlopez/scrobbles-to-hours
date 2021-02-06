@@ -1,4 +1,3 @@
-![Scrobbles to Hours Logo | width=100](/res/readmeImg.png)
 <img src="/res/readmeImg.png" align="center" height="48" >
 
 Scrobbles to Hours is Last.fm tool to convert a user's scrobbles(playcount) to hours.
