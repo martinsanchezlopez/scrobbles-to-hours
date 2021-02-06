@@ -1,6 +1,7 @@
 let rankedByScrobbles = false; //default : ranked by playtime and NOT playcount
 let timeUnitHour = true; //default time is set to hours
 
+let blockAjaxStop = false;
 
 /*
  * Change sorting of the result table between playcount and playtime
@@ -86,7 +87,12 @@ function buildResultTable(){
 
 
 $(document).ajaxStop(function (){
-    buildResultTable(); 
+    if(!blockAjaxStop){ //dumb solution to not make table when calling the countingAPI
+        buildResultTable(); 
+    }
+    else{
+        blockAjaxStop = false;
+    }
 });
 
 

@@ -14,6 +14,10 @@ let reportArray = [];
 let error = false;
 /*
  * Append error message to page of a json.
+ * 
+ * 
+ * (I know this is really scuffed but I haven't learned error handling and learning it for this small project would not be worth my time.
+ * As I'm learn it next semester and I'm in vacation :D )
  */
 function throwError(json){
         $('#error').append("<h1> ERROR : " + json.message + " </h1>");
@@ -56,9 +60,11 @@ function customReport(){
     if (userName != "" && artist != "" && name != "" ){
         
         if(getSelectedValue("queryOption") == "track"){
+            incrementSearchCount("custom");
             getTrackLT(userName, artist, name);
         }
         else if(getSelectedValue("queryOption") == "album"){
+            incrementSearchCount("custom");
             getAlbumListeningTime(userName, artist, name, -1);
         }
         else{
@@ -96,7 +102,7 @@ function topReport(){
     
     if (!error){
         let queryMode = getSelectedValue("topQueryOption");
-
+        incrementSearchCount("top");
         $.getJSON("https://ws.audioscrobbler.com/2.0/?method=user.gettop" + queryMode +  "&user=" + userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740" + "&limit=" + getSelectedValue("topQueryEntries") + "&period="+ getSelectedValue("topQueryPeriod") + "&format=json", function(json){
             topToHour(json, queryMode);
         });
@@ -187,6 +193,7 @@ function getAlbumListeningTime(user, artist, album, userGetTopPlaycount, rank){ 
        
 function getAlbumListeningTimeInDepth(json){
     if(!queryBlock){
+        incrementSearchCount("depth");
         $('#depth').empty();
         totalTime = 0;
         let tracks = [];
