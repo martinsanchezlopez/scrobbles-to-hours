@@ -27,10 +27,12 @@ function incrementSearchCount(type){
     blockAjaxStop = true;
     $.getJSON("https://api.countapi.xyz/hit/scorbbleToHours/" + type, function(response) {
     });
+    blockAjaxStop = false;
 }
 
 /*
  * Conosole log number of searches
+ * 
  */
 function getSearchCount(type){
     blockAjaxStop = true;
