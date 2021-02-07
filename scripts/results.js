@@ -68,7 +68,7 @@ function buildResultTable(){
     
     if(rankedByScrobbles){
         reportArray.sort( (a,b) => {
-            return a.rank - b.rank;   
+            return b.playcount - a.playcount;   
         });
     }
     else{
