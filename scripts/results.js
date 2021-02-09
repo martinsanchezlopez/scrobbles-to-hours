@@ -1,4 +1,4 @@
-let rankedByScrobbles = false; //default : ranked by playtime and NOT playcount
+let rankedByTime = true; //default : ranked by playtime and NOT playcount
 let timeUnitHour = true; //default time is set to hours
 
 let blockAjaxStop = false;
@@ -10,6 +10,11 @@ $(document).ajaxStop(function (){
     if(!blockAjaxStop){ //dumb solution to not make table when calling the countingAPI
         buildResultTable(); 
         queryBlock = false;
+        if(throwZeroError){
+            var json = '{"message":"Any 0s indicate there was an error with the data provided by lastfm."}';
+            throwError(JSON.parse(json));
+        }
+
     }
     else{
         blockAjaxStop = false;
@@ -24,13 +29,13 @@ $(document).ajaxStop(function (){
  * Change sorting of the result table between playcount and playtime
  */
 function switchSort(){
-    rankedByScrobbles = !rankedByScrobbles;
+    rankedByTime = !rankedByTime;
     buildResultTable();
-    if(rankedByScrobbles){ //ranked by playcount
-        document.getElementById("sortButton").innerHTML = "Sort by playtime";
+    if(rankedByTime){ //ranked by playcount
+        document.getElementById("sortButton").innerHTML = "Sort by scrobbles";
     }
     else{
-        document.getElementById("sortButton").innerHTML = "Sort by scrobbles";
+        document.getElementById("sortButton").innerHTML = "Sort by playtime";
     }
 }
 
@@ -66,14 +71,14 @@ function buildResultTable(){
         resultHtml += '<th>#</th>';
     }
     
-    if(rankedByScrobbles){
+    if(rankedByTime){
         reportArray.sort( (a,b) => {
-            return b.playcount - a.playcount;   
+            return b.playcountMinute - a.playcountMinute;
         });
     }
     else{
         reportArray.sort( (a,b) => {
-            return b.playcountMinute - a.playcountMinute;   
+            return b.playcount - a.playcount;   
         });
     }
     
@@ -100,6 +105,7 @@ function buildResultTable(){
     
     resultHtml += '</table>';
     $('#result').append(resultHtml);
+    
     document.getElementById("resultButtons").style.display = "block";
     document.getElementById("download").style.display = "block";
     document.getElementById("load").innerHTML = "";

@@ -1,3 +1,5 @@
+throwZeroError = false;
+
 
 function constructObject(artist, name, pC, time, rank){ //pC for playcount
     let timeHour = time/60;
@@ -9,8 +11,15 @@ function constructObject(artist, name, pC, time, rank){ //pC for playcount
     
     object.artist = artist;
     object.name = name;
-    object.playcountHour= timeHour.toFixed(1);
-    object.playcountMinute= parseInt(time);
+    if(!isNaN(timeHour)){
+        object.playcountHour= timeHour.toFixed(1);
+        object.playcountMinute= parseInt(time);
+    }
+    else{
+        object.playcountHour = 0;
+        object.playcountMinute = 0;
+        throwZeroError = true;
+    }
     object.playcount= pC;
 
 
