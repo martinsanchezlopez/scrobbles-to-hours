@@ -66,7 +66,15 @@ function customReport(){
         }
         else if(getSelectedValue("queryOption") == "album"){
             incrementSearchCount("custom");
-            getAlbumListeningTime(userName, artist, name, -1);
+            $.getJSON("https://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + name + "&format=json&autocorrect=1", function(json) {
+
+                 if (json.album.tracks.track.length > 0){ //check for album not found
+                    getAlbumTime(json.album, userName, json.album.artist, json.album.name, json.album.userplaycount, '#');
+                 }
+                 else{ //probably should do it outside this function....
+                    getAlbumTimeMusicbrainz(json.album.artist, json.album.name, json.album.userplaycount,'#'); 
+                 }
+            });
             document.getElementById("load").innerHTML = "Fetching data...";
         }
         else{
@@ -138,12 +146,33 @@ let albumJson = null; //used to save json in case user want in depth report
 function topToHour(json, topMethodOption){
     if(topMethodOption == "tracks"){
         $.each(json.toptracks.track, function(i, item){
-            getPlayTime(item, true);
+            if (item.duration > 0 ){
+                getPlayTime(item, true, item.duration);
+            }
+            else{
+                $.getJSON('https://musicbrainz.org/ws/2/recording?query=recording:' + item.name + ' AND '+ 'artist:'+ item.artist.name + '&fmt=json', function(json){
+                let duration = parseInt(json.recordings[0].length/600)
+                getPlayTime(item, true, duration);
+                });
+            }
         });
     }
     else{
         $.each(json.topalbums.album, function(i, item){
-            getAlbumListeningTime(userName, item.artist.name, item.name, item.playcount, item["@attr"].rank);
+            $.getJSON("https://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ userName + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + encodeURIComponent(item.artist.name) + "&album=" + encodeURIComponent(item.name) + "&format=json&autocorrect=1", function(json) {
+                if(json.error != undefined){
+                throwError(json);
+                return;
+            }
+                
+                 if (json.album.tracks.track.length > 0){ //check for album not found
+                    getAlbumTime(json, userName, item.artist.name, item.name, item.playcount, item["@attr"].rank);
+                 }
+                 else{ //probably should do it outside this function....
+                    getAlbumTimeMusicbrainz(item.artist.name, item.name, item.playcount, item["@attr"].rank); 
+                 }
+            });
+            
         });
     }
 }
@@ -153,53 +182,65 @@ function topToHour(json, topMethodOption){
         
       
       
-function getAlbumListeningTime(user, artist, album, userGetTopPlaycount, rank){ //playcount -1 if the funciton is not called for the user.gettopalbums
+function getAlbumTime(json, user, artist, album, userGetTopPlaycount, rank){ //playcount '#' if the funciton is not called for the user.gettopalbums
     let albumDuration = 0;
-    var totalTimeHtml = '';
-    $.getJSON("https://ws.audioscrobbler.com/2.0/?method=album.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&album=" + album + "&format=json&autocorrect=1", function(json) {
-        if(json.error != undefined){
-            throwError(json);
+    
+    
+    let jsonTracks = json.album.tracks.track;
+    for(i=0; i<jsonTracks.length; i++){
+        albumDuration += parseInt(jsonTracks[i].duration);
+    }
+    
+    albumJson = json; // for use if user chooses in depth count
+    
+    let userPlayCount;
+    if (userGetTopPlaycount == '#'){
+        userPlayCount = json.album.userplaycount;
+    }
+    else{
+        userPlayCount = userGetTopPlaycount;
+    }
+
+    let minutePlayTime = parseInt( (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60) );
+    reportArray.push(constructObject(json.album.artist, json.album.name, userPlayCount, minutePlayTime, rank));
+    
+    
+        if(!error){
+            if(userGetTopPlaycount == '#'){
+                var depthOption = '';
+                depthOption += '<br> <button id="aDepth" onclick="getAlbumTimeInDepth(albumJson);">Song by song time count</button><div id="invis">Will give you a more accurate time, specially if you scrobbles are not evenly distributed among tracks of variying length. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
+                $('#depth').append(depthOption);
+            }
+                
+        }
+    //});
+    
+        
+}
+       
+function getAlbumTimeMusicbrainz(artistName, albumName, userPlayCount, rank){
+    let albumDuration = 0;
+    $.getJSON('https://musicbrainz.org/ws/2/release?query=release:' + encodeURIComponent(albumName)+ ' AND '+ 'artist:'+ encodeURIComponent(artistName) + '&fmt=json', function(json){
+        if(json.releases.length == 0){
+            reportArray.push(constructObject(artistName, albumName, userPlayCount, 0, rank));
             return;
         }
+        let id = json.releases[0].id
         
-        
-        let jsonTracks = json.album.tracks.track;
-        for(i=0; i<jsonTracks.length; i++){
-            albumDuration += parseInt(jsonTracks[i].duration);
-        }
-        
-        albumJson = json; // for use if user chooses in depth count
-        
-        let userPlayCount;
-        if (userGetTopPlaycount == -1){
-            userPlayCount = json.album.userplaycount;
-        }
-        else{
-            userPlayCount = userGetTopPlaycount;
-        }
-        
-        
-        
-        let minutePlayTime = parseInt( (albumDuration*parseInt(userPlayCount) )/(jsonTracks.length*60) );
-        reportArray.push(constructObject(json.album.artist, json.album.name, userPlayCount, minutePlayTime, rank));
-        
-        
-            if(!error){
-                if(userGetTopPlaycount == -1){
-                    var depthOption = '';
-                    depthOption += '<br> <button id="aDepth" onclick="getAlbumListeningTimeInDepth(albumJson);">Song by song time count</button><div id="invis">Will give you a more accurate time, specially if you scrobbles are not evenly distributed among tracks of variying length. (This method is also more prone to error depending on if the metadata of the file you played/streamed matches the one last.fm.)</div> '; 
-                    $('#depth').append(depthOption);
-                }
-                    
+        $.getJSON('https://musicbrainz.org/ws/2/release/' + id + '?inc=recordings' + '&fmt=json', function(brainzJson){
+            let tracks = brainzJson.media[0].tracks
+            for(i=0; i<tracks.length; i++){
+                albumDuration += parseInt(tracks[i].length);
             }
-        //});
         
-            
-    }); // end OF JSON FUNCTION
+            let minutePlayTime = parseInt( (albumDuration*parseInt(userPlayCount) )/(tracks.length*60000) );
+            reportArray.push(constructObject(artistName, albumName, userPlayCount, minutePlayTime, rank));
+        });
+    });
 }
        
        
-function getAlbumListeningTimeInDepth(json){
+function getAlbumTimeInDepth(json){
     if(!queryBlock){
         incrementSearchCount("depth");
         $('#depth').empty();
@@ -237,11 +278,24 @@ function getAlbumListeningTimeInDepth(json){
  */
 function getTrackLT(user, artist, track){
         $.getJSON("https://ws.audioscrobbler.com/2.0/?method=track.getInfo&user="+ user + "&api_key=7f18ca9d34c83965fff9d9ff7f81a740&limit=10&artist=" + artist + "&track=" + track + "&format=json&autocorrect=1", function(json) {
+            let item = json.track
             if(json.error != undefined){
                 throwError(json);
                 return;
             }
-            getPlayTime(json.track, false);
+            
+            if (item.duration > 0 ){
+                getPlayTime(item, false, item.duration);
+                console.log('over 0');
+            }
+            else{
+                
+                $.getJSON('https://musicbrainz.org/ws/2/recording?query=recording:' + encodeURIComponent(item.name)+ ' AND '+ 'artist:'+ encodeURIComponent(item.artist.name) + '&fmt=json', function(brainzJson){
+                    let duration = parseInt(brainzJson.recordings[0].length)
+                    console.log('under 0' + duration);
+                    getPlayTime(item, false, duration);
+                });
+            }
         });
         
 }
@@ -252,10 +306,9 @@ function getTrackLT(user, artist, track){
  * trackJson : json of the track to calculate
  * jsonFromTop : true if the json is the json from user.getTopTracks (topReport), false if from track.getInfo (customReport)
  */
-function getPlayTime(trackJson, jsonFromTop){
+function getPlayTime(trackJson, jsonFromTop, duration){
     var html = '';
     let name = trackJson.name;
-    let duration = trackJson.duration; 
     let playcount = 0;
     let time = 0;
     let rank = null;   
