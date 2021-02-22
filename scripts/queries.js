@@ -9,6 +9,13 @@
 let reportArray = [];
 
 
+$.ajaxSetup({
+    headers: { 'User-Agent': 'ScrobblesToHours/1.0 (scrobblestohours@gmail.com)'},
+    contentType : 'json',
+    type: 'GET'
+});
+
+
 
 
 let error = false;
@@ -151,9 +158,12 @@ function topToHour(json, topMethodOption){
             }
             else{
                 $.getJSON('https://musicbrainz.org/ws/2/recording?query=recording:' + item.name + ' AND '+ 'artist:'+ item.artist.name + '&fmt=json', function(json){
-                let duration = parseInt(json.recordings[0].length/600)
-                getPlayTime(item, true, duration);
-                });
+                setTimeout(function(){
+                    let duration = parseInt(json.recordings[0].length/600)
+                    getPlayTime(item, true, duration);
+                },1000);
+                        
+                    });
             }
         });
     }
@@ -221,13 +231,16 @@ function getAlbumTime(json, user, artist, album, userGetTopPlaycount, rank){ //p
 function getAlbumTimeMusicbrainz(artistName, albumName, userPlayCount, rank){
     let albumDuration = 0;
     $.getJSON('https://musicbrainz.org/ws/2/release?query=release:' + encodeURIComponent(albumName)+ ' AND '+ 'artist:'+ encodeURIComponent(artistName) + '&fmt=json', function(json){
+        setTimeout(function(){
         if(json.releases.length == 0){
             reportArray.push(constructObject(artistName, albumName, userPlayCount, 0, rank));
             return;
         }
+        },1000);
         let id = json.releases[0].id
         
         $.getJSON('https://musicbrainz.org/ws/2/release/' + id + '?inc=recordings' + '&fmt=json', function(brainzJson){
+            setTimeout(function(){
             let tracks = brainzJson.media[0].tracks
             for(i=0; i<tracks.length; i++){
                 albumDuration += parseInt(tracks[i].length);
@@ -235,6 +248,7 @@ function getAlbumTimeMusicbrainz(artistName, albumName, userPlayCount, rank){
         
             let minutePlayTime = parseInt( (albumDuration*parseInt(userPlayCount) )/(tracks.length*60000) );
             reportArray.push(constructObject(artistName, albumName, userPlayCount, minutePlayTime, rank));
+            },1000);
         });
     });
 }
@@ -327,3 +341,4 @@ function getPlayTime(trackJson, jsonFromTop, duration){
     }
 }
 
+ 
